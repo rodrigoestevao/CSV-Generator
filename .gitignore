@@ -1,0 +1,121 @@
+### Compiled source ###
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+### Android built artifacts ###
+*.apk
+*.ap_
+*.dex
+
+### Bundler config [Rails] ###
+.bundle/
+
+### Packages ###
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.war
+*.ear
+*.aar
+*.rar
+*.tar
+*.zip
+
+### Logs and some databases ###
+log/
+*.log
+*.csv
+
+### OS generated files ###
+.DS_Store
+Icon?
+._.*
+*.db
+
+### Sonar ###
+.scannerwork/
+
+### Eclipse / STS ###
+.metadata/
+.settings/
+.sonarlint/
+.recommenders/
+RemoteSystemsTempFiles/
+Servers*/
+bin/
+build/
+dist/
+classes/
+gen/
+.apt_generated/
+.project
+*.classpath
+.factorypath
+
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+### Temporary and unneeded files ###
+site/
+*attic*/
+elasticsearch/
+bkp/
+litter/
+backup/
+t?mp/
+obj/
+*.swp
+*~
+.secret
+
+### Django / Python unneded files ###
+*.egg-info/
+env/
+*.pyc
+__pycache__/
+
+### Sass cache files ###
+.sass-cache/
+
+### Node modules ###
+node_modules/
+
+### Bower components ###
+bower_components/
+assets/libs/
+
+### Visual Studio Code files ###
+.vscode/
+
+### Other Source Control ###
+.svn/
+CVS/
+
+### Other files or directories ###
+.certificate/
+coverage/
+htmlcov/
+.checkstyle
+MANIFEST
+coverage.*
+
+!.gitignore
+!.travis.yml
+!.isort.cfg

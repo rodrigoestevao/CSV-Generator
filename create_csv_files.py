@@ -18,7 +18,7 @@ from sys import argv
 from csv import DictWriter
 from random import randrange
 from faker import Faker
-from shutil import copyfileobj
+from shutil import copyfileobj, rmtree
 
 class CsvGenerator:
 
@@ -50,13 +50,11 @@ class CsvGenerator:
         result += "}"
         return result
 
-
     @staticmethod
     def __random_enumerator(start=5, stop=1001):
         enumerator = randrange(start, stop)
         for row in range(start, enumerator):
             yield row
-
 
     @staticmethod
     def __create_dirs(dirs):
@@ -66,9 +64,7 @@ class CsvGenerator:
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
-
         return os.path.isdir(dirs)
-
 
     @staticmethod
     def __compress_file(file_path):
@@ -78,9 +74,7 @@ class CsvGenerator:
             with ZipFile(zip_file_path, 'w') as zip_file:
                 zip_file.write(file_path)
             result = os.path.isfile(zip_file_path)
-
         return result
-
 
     @staticmethod
     def __compress_dir(dir_path):
@@ -89,30 +83,35 @@ class CsvGenerator:
             zip_file_path = dir_path.strip() + '.zip'
             with ZipFile(zip_file_path, 'w') as zip_file:
                 for dirname, subdirs, files in os.walk(dir_path):
-                    zip_file.wirte(dirname)
+                    zip_file.write(dirname)
                     for filename in files:
-                        zip_file(os.path.join(dirname, filename))
+                        zip_file.write(os.path.join(dirname, filename))
             result = os.path.isfile(zip_file_path)
-
         return result
 
-
-    def __create_buckets(self):
+    def __create_bucket_list(self):
+        self.__bucket_list = []
         if self.num_of_buckets > 0:
-            self.__bucket_list = []
             for index in range(self.num_of_buckets):
-                bucket_path = os.path.join(self.destination_path, 'bucket_{:03}'.format(index + 1))
-                if CsvGenerator._create_dirs(bucket_path):
-                    self.__bucket_list.append(bucket_path)
+                bucket_path = os.path.join(self.destination_path, 'B{:03}'.format(index + 1))
 
-        return len(self.__bucket_list) == self.num_of_buckets
+                if os.path.isdir(bucket_path):
+                    rmtree(path=bucket_path)
 
+                self.__bucket_list.append(bucket_path)
+        else:
+            self.__bucket_list.append(self.destination_path)
+
+        return (self.num_of_buckets == 0) or (len(self.__bucket_list) == self.num_of_buckets)
 
     def __create_csv_file(self, file_path):
         result = False
         if file_path:
             file_dir = os.path.dirname(file_path)
-            CsvGenerator.__create_dirs(file_dir)
+
+            if not os.path.isdir(file_dir):
+                CsvGenerator.__create_dirs(file_dir)
+
             with open(file_path, "w", newline='') as csv_file:
                 writer = DictWriter(csv_file, delimiter=self.delimiter, fieldnames=["name", "phone", "address", "city", "state", "zip", "notes"])
                 writer.writeheader()
@@ -123,7 +122,7 @@ class CsvGenerator:
                         'address': self.__fake.street_address(),
                         'city': self.__fake.city(),
                         'state': self.__fake.state_abbr(),
-                        'zip': self._fake.zipcode(),
+                        'zip': self.__fake.zipcode(),
                         'notes': self.__fake.text(),
                     })
 
@@ -135,44 +134,40 @@ class CsvGenerator:
         return result
 
     def generate(self):
-        if self.num_of_buckets > 0:
-            self.__create_buckets()
-        else:
-            pass
+        self.__create_bucket_list()
+        for bucket in self.__bucket_list:
+            for index in range(self.num_of_files):
+                file_path = os.path.join(bucket, 'F{:03}.csv'.format(index + 1))
+                if self.__create_csv_file(file_path=file_path) and self.compress:
+                    if self.num_of_buckets == 0:
+                        CsvGenerator.__compress_file(file_path=file_path)
+                        os.remove(file_path)
 
-
-    # def generate(self, dynamic_num_of_files, path):
-    #     # Using buckets
-    #     # or
-    #     # Using the current dir
-
-
-    #     if self.num_of_buckets > 0:
-    #         if self.__create_buckets():
-    #             for bucket in self.__bucket_list:
-
-
-
-    #     for index in range(self.num_of_files):
-    #         file_name = self.path + "{:03}.csv".format(index + 1)
-
-    #         if self.compress:
-    #             with open(file_name, 'rb') as csv_file:
-    #                 with gzip.open("{}.gz".format(file_name), 'wb') as gz_file:
-    #                     copyfileobj(csv_file, gz_file)
-    #             os.remove(file_name)
-
+            if self.compress and self.num_of_buckets > 0:
+                CsvGenerator.__compress_dir(dir_path=bucket)
 
 
 from argparse import ArgumentParser
 
 if __name__ == '__main__':
+
+    def str2bool(value):
+        result = False
+        if value.lower().strip() in ('yes', 'true', 't', 'y', '1'):
+            result = True
+        elif value.lower().strip() in ('no', 'false', 'f', 'n', '0'):
+            result = False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+        return result
+
+
     parser = ArgumentParser(description='Generate random files with some random content')
-    parser.add_argument('-nf', '--num_of_files', metavar='N', type=int, default=1, help='Number of files to be generated')
-    parser.add_argument('-nb', '--num_of_buckets', metavar='N', type=int, default=0, help='Number of buckets (extra dir) that are going to be created. If specified, each bucket will have a random number of files from 1 to the value specified on --files.')
-    parser.add_argument('-dp', '--destination_path', default='.', help='Destination directory')
-    parser.add_argument('-d', '--delimiter', type=str, metavar='D', default=',', help='Delimiter used to separate the records on files')
-    parser.add_argument('-c', '--compress', type=bool, default=False, choices=[True, False], help='If true, the generated files will be compressed as .zip file. If the --buckets value is greater than zero will be created a zip file per bucket.')
+    parser.add_argument('-n', '--num_of_files', metavar='N', type=int, default=1, help='Number of files to be generated')
+    parser.add_argument('-b', '--num_of_buckets', metavar='N', type=int, default=0, help='Number of buckets (extra dir) that are going to be created. If specified, each bucket will have a random number of files from 1 to the value specified on --files.')
+    parser.add_argument('-p', '--destination_path', default='.', help='Destination directory')
+    parser.add_argument('-d', '--delimiter', type=str, default=',', help='Delimiter used to separate the records on files')
+    parser.add_argument('-c', '--compress', metavar='BOOL', type=str2bool, nargs='?', const=True, default=False, help='Defines if the random files or buckets shall be compressed or not.')
     args = parser.parse_args()
 
     generator = CsvGenerator(
@@ -183,4 +178,4 @@ if __name__ == '__main__':
         compress=args.compress
     )
 
-
+    generator.generate()

@@ -3,7 +3,9 @@
 ### What is this repository for? ###
 
 This repository has a script that can be used to generate some random files with using some random 
-content.
+content. The files can be compressed or not and can either be created splited between one or more 
+buckets. In this case, if you have decided to comprees the output the whole directory will be 
+compressed with all files within.
 
 ### Requirements ###
 
