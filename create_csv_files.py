@@ -85,9 +85,8 @@ class CsvGenerator:
 
             with ZipFile(zip_name, 'w') as zip_file:
                 for root, subdirs, files in os.walk(dir_path):
-                    dest_dir = os.path.basename(root)
                     for file in files:
-                        zip_file.write(os.path.join(root, file), arcname=os.path.join(dest_dir, file))
+                        zip_file.write(os.path.join(root, file), arcname=os.path.join('.', file))
             result = os.path.isfile(zip_name)
         return result
 
@@ -140,10 +139,9 @@ class CsvGenerator:
         for bucket in self.__bucket_list:
             for index in range(self.num_of_files):
                 file_path = os.path.join(bucket, 'F{:03}.csv'.format(index + 1))
-                if self.__create_csv_file(file_path=file_path) and self.compress:
-                    if self.num_of_buckets == 0:
-                        CsvGenerator.__compress_file(file_path=file_path)
-                        os.remove(file_path)
+                if self.__create_csv_file(file_path=file_path) and self.compress and self.num_of_buckets == 0:
+                    CsvGenerator.__compress_file(file_path=file_path)
+                    os.remove(file_path)
 
             if self.compress and self.num_of_buckets > 0:
                 CsvGenerator.__compress_dir(dir_path=bucket)
