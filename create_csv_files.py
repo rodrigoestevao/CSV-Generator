@@ -80,13 +80,15 @@ class CsvGenerator:
     def __compress_dir(dir_path):
         result = False
         if os.path.isdir(dir_path):
-            zip_file_path = dir_path.strip() + '.zip'
-            with ZipFile(zip_file_path, 'w') as zip_file:
-                for dirname, subdirs, files in os.walk(dir_path):
-                    zip_file.write(dirname)
-                    for filename in files:
-                        zip_file.write(os.path.join(dirname, filename))
-            result = os.path.isfile(zip_file_path)
+            path = os.path.abspath(dir_path)
+            zip_name = path + '.zip'
+
+            with ZipFile(zip_name, 'w') as zip_file:
+                for root, subdirs, files in os.walk(dir_path):
+                    dest_dir = os.path.basename(root)
+                    for file in files:
+                        zip_file.write(os.path.join(root, file), arcname=os.path.join(dest_dir, file))
+            result = os.path.isfile(zip_name)
         return result
 
     def __create_bucket_list(self):
