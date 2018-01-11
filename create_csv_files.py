@@ -32,8 +32,8 @@ class CsvGenerator:
     ):
         self.__bucket_list = []
         self.__file_list = []
+        self.__fake = Faker()
 
-        self.fake = Faker()
         self.num_of_files = max(1, int(num_of_files))
         self.num_of_buckets = min(int(num_of_buckets), self.num_of_files)
         self.destination_path = str(destination_path).strip(os.sep).strip() + os.sep
@@ -42,13 +42,11 @@ class CsvGenerator:
 
     def __str__(self):
         result = "{"
-        result += "__bucket_list: " + str(self.__bucket_list).strip() + ", "
-        result += "__file_list: " + str(self.__file_list).strip() + ", "
-        result += "num_of_files: " + str(self.num_of_files).strip() + ", "
-        result += "num_of_buckets: " + str(self.num_of_buckets).strip() + ", "
-        result += "destination_path: " + self.destination_path.strip() + ", "
-        result += "compress: " + str(self.compress).strip() + ", "
-        result += "delimiter: " + str(self.delimiter).strip()
+        result += "num_of_files: " + str(self.num_of_files) + ", "
+        result += "num_of_buckets: " + str(self.num_of_buckets) + ", "
+        result += "destination_path: " + self.destination_path + ", "
+        result += "compress: " + str(self.compress) + ", "
+        result += "delimiter: " + self.delimiter
         result += "}"
         return result
 
@@ -120,13 +118,13 @@ class CsvGenerator:
                 writer.writeheader()
                 for _ in CsvGenerator.__random_enumerator():
                     writer.writerow({
-                        'name': self.fake.name(),
-                        'phone': self.fake.phone_number(),
-                        'address': self.fake.street_address(),
-                        'city': self.fake.city(),
-                        'state': self.fake.state_abbr(),
+                        'name': self.__fake.name(),
+                        'phone': self.__fake.phone_number(),
+                        'address': self.__fake.street_address(),
+                        'city': self.__fake.city(),
+                        'state': self.__fake.state_abbr(),
                         'zip': self._fake.zipcode(),
-                        'notes': self.fake.text(),
+                        'notes': self.__fake.text(),
                     })
 
             result = os.path.isfile(file_path)
@@ -137,7 +135,11 @@ class CsvGenerator:
         return result
 
     def generate(self):
-        pprint(self)
+        if self.num_of_buckets > 0:
+            self.__create_buckets()
+        else:
+            pass
+
 
     # def generate(self, dynamic_num_of_files, path):
     #     # Using buckets
@@ -181,4 +183,4 @@ if __name__ == '__main__':
         compress=args.compress
     )
 
-    print(generator)
+
