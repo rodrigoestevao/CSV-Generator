@@ -103,10 +103,14 @@ assets/libs/
 
 ### Visual Studio Code files ###
 .vscode/
+.vscode/**
 
 ### Other Source Control ###
 .svn/
 CVS/
+
+### Jupyter dirs
+.ipynb_checkpoints/
 
 ### Other files or directories ###
 .certificate/

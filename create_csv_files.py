@@ -12,6 +12,7 @@ Rodrigo Estevao
 import os
 import errno
 
+from pathlib import PurePosixPath
 from re import sub
 from zipfile import ZipFile
 from sys import argv
@@ -39,7 +40,7 @@ class CsvGenerator:
 
         self.num_of_files = max(1, int(num_of_files))
         self.num_of_buckets = min(int(num_of_buckets), self.num_of_files)
-        self.destination_path = str(destination_path).strip(os.sep).strip() + os.sep
+        self.destination_path = str(PurePosixPath(destination_path)).strip('file:/')
         self.compress = compress
         self.delimiter = delimiter
 
@@ -176,6 +177,7 @@ def main():
     Orchestrates the application execution
     """
     args = get_args()
+
     generator = CsvGenerator(
         num_of_files=args.num_of_files,
         num_of_buckets=args.num_of_buckets,
@@ -183,6 +185,7 @@ def main():
         delimiter=args.delimiter,
         compress=args.compress
     )
+
     generator.generate()
 
 
