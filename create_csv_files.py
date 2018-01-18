@@ -21,6 +21,9 @@ from faker import Faker
 from shutil import copyfileobj, rmtree
 
 class CsvGenerator:
+    """
+    Generator class used to build up CSV files with fixed fields but with random content.
+    """
 
     def __init__(
         self,
@@ -147,29 +150,32 @@ class CsvGenerator:
                 CsvGenerator.__compress_dir(dir_path=bucket)
 
 
+####################################################################################################
+
 from argparse import ArgumentParser
 
-if __name__ == '__main__':
-
-    def str2bool(value):
-        result = False
-        if value.lower().strip() in ('yes', 'true', 't', 'y', '1'):
-            result = True
-        elif value.lower().strip() in ('no', 'false', 'f', 'n', '0'):
-            result = False
-        else:
-            raise argparse.ArgumentTypeError('Boolean value expected.')
-        return result
+# Deal with boolean parameters.
+str2bool = lambda value: True if value.lower().strip() in ('yes', 'true', 'ok', 't', 'y', '1') else False
 
 
+def get_args():
+    """
+    Read the input parametes from console
+    """
     parser = ArgumentParser(description='Generate random files with some random content')
     parser.add_argument('-n', '--num_of_files', metavar='N', type=int, default=1, help='Number of files to be generated')
     parser.add_argument('-b', '--num_of_buckets', metavar='N', type=int, default=0, help='Number of buckets (extra dir) that are going to be created. If specified, each bucket will have a random number of files from 1 to the value specified on --files.')
     parser.add_argument('-p', '--destination_path', default='.', help='Destination directory')
     parser.add_argument('-d', '--delimiter', type=str, default=',', help='Delimiter used to separate the records on files')
     parser.add_argument('-c', '--compress', metavar='BOOL', type=str2bool, nargs='?', const=True, default=False, help='Defines if the random files or buckets shall be compressed or not.')
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main():
+    """
+    Orchestrates the application execution
+    """
+    args = get_args()
     generator = CsvGenerator(
         num_of_files=args.num_of_files,
         num_of_buckets=args.num_of_buckets,
@@ -177,5 +183,8 @@ if __name__ == '__main__':
         delimiter=args.delimiter,
         compress=args.compress
     )
-
     generator.generate()
+
+
+if __name__ == '__main__':
+    main()
