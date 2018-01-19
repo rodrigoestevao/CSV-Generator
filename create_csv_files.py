@@ -40,7 +40,7 @@ class CsvGenerator:
 
         self.num_of_files = max(1, int(num_of_files))
         self.num_of_buckets = min(int(num_of_buckets), self.num_of_files)
-        self.destination_path = str(PurePosixPath(destination_path)).strip('file:/')
+        self.destination_path = str(PurePosixPath(destination_path)).replace('file:/', '')
         self.compress = compress
         self.delimiter = delimiter
 
